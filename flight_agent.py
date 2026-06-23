@@ -118,7 +118,7 @@ def check_and_alert():
     
     current_price = best_overall["price"]
     is_new_low = previous_best is None or current_price < previous_best
-    under_target = current_price <= 600
+    under_target = current_price <= 700
     
     # Hand-crafted Google Flights link with your dates
     hand_crafted_link = (
