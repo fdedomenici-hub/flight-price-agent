@@ -118,22 +118,40 @@ def check_and_alert():
     
     current_price = best_overall["price"]
     is_new_low = previous_best is None or current_price < previous_best
-    under_target = current_price <= 700
+    under_target = current_price <= 600
     
     # Hand-crafted Google Flights link with your dates
     hand_crafted_link = (
         "https://www.google.com/travel/flights/search?tfs=CBwQAhoqEgoyMDI2LTExLTA3agwIAxIIL20vMGZmbXAaKBIKMjAyNi0xMS0xNHIMCAMSCC9tLzA0anBsQAFIAXABggELCP///////////wGYAQE&curr=USD"
     )
     
-    # Temporary: Force alert for testing
-    msg = f"🚨 <b>TEST ALERT - Buenos Aires → Fortaleza</b> 🚨\n\n"
-    msg += f"<b>Best from:</b> {best_overall['origin']}\n"
-    msg += f"<b>Price:</b> {best_overall['price_display']} USD\n"
-    msg += f"\n🔗 <a href='{best_overall.get('search_url', '')}'>View Search</a>"
-    
-    send_telegram_alert(msg)
-    print("Forced test alert sent.")
+    if is_new_low or under_target:
+        msg = f"🚨 <b>FLIGHT DEAL ALERT - Buenos Aires → Fortaleza</b> 🚨\n\n"
+        msg += f"<b>Best from:</b> {best_overall['origin']}\n"
+        msg += f"<b>Outbound:</b> 2026-11-07\n"
+        msg += f"<b>Return:</b> 2026-11-14\n"
+        msg += f"<b>Price:</b> {best_overall['price_display']} USD ({best_overall['stops']} stops)\n"
+        msg += f"<b>Duration:</b> {best_overall['duration']}\n\n"
+        
+        if previous_best:
+            msg += f"Previous best: ${previous_best} → New low!\n"
+        if under_target:
+            msg += f"✅ Under $600 target!\n"
+        
+        msg += f"\n🔗 <a href='{best_overall.get('search_url', hand_crafted_link)}'>View on Google Flights (SerpAPI link)</a>\n"
+        msg += f"🔗 <a href='https://www.google.com/travel/flights'>Manual Search with your filters</a>\n"
+        
+        send_telegram_alert(msg)
+        
+        history[route_key] = {
+            "best_price": current_price,
+            "last_checked": best_overall["checked_at"],
+            "search_url": hand_crafted_link
+        }
+        save_history(history)
+        print(f"New best price: ${current_price}")
+    else:
+        print(f"No better deal. Current best: ${current_price}")
 
 if __name__ == "__main__":
     check_and_alert()
-    send_telegram_alert("🧪 Test message: Your daily flight agent is working correctly!")
