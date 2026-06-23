@@ -155,3 +155,4 @@ def check_and_alert():
 
 if __name__ == "__main__":
     check_and_alert()
+    send_telegram_alert("🧪 Test message: Your daily flight agent is working correctly!")
